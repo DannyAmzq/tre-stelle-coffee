@@ -27,9 +27,14 @@ Two paths, so a single failure doesn't silently strand customers:
    **This requires a Secret set on the webhook in sanity.io/manage that matches
    `SANITY_WEBHOOK_SECRET` in Vercel.** Without it every delivery gets a 401.
 
-2. **Safety net** — `/api/cron/send-pending-tracking-emails`, run hourly by
-   Vercel Cron (see `vercel.json`). Sweeps up orders with a tracking number
-   whose email never went out. Guardrails: only looks back
+2. **Safety net** — `/api/cron/send-pending-tracking-emails`, run daily at
+   14:00 UTC (~9am Central) by Vercel Cron (see `vercel.json`). Sweeps up
+   orders with a tracking number whose email never went out.
+   **The schedule is daily because this project is on the Vercel Hobby plan,
+   which caps cron jobs at once per day** — a more frequent schedule is
+   rejected at deploy time. On Pro this can go back to hourly (`0 * * * *`).
+   Because the sweep is only daily, the webhook above is still the path that
+   matters for timely delivery. Guardrails: only looks back
    `TRACKING_EMAIL_LOOKBACK_DAYS` (default 14) so it can never blast a
    historical backlog, caps sends per run (`TRACKING_EMAIL_MAX_PER_RUN`,
    default 10), skips drafts/archived, and supports `?dryRun=1`.
