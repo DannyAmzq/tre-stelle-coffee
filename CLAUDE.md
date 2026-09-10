@@ -10,8 +10,39 @@ Next.js 16 (App Router, Turbopack) e-commerce + marketing site for Tre Stelle Co
 ## Active Branch
 All current work is on: `claude/fix-security-issues-eDFXd`
 
-**Open PR #10** — "feat: event updates and popup removal (postponed)"
-- Merge this to deploy to production.
+PRs #9, #10, #11, #14, #15 and #16 are merged. Restart the branch from `main`
+before starting new work.
+
+---
+
+## Tracking Emails (how they actually work)
+
+Two paths, so a single failure doesn't silently strand customers:
+
+1. **Fast path** — `/api/send-tracking-email`. A Sanity webhook fires when an
+   order changes; if it has a tracking number and hasn't been emailed, the email
+   goes out immediately. Authenticated with Sanity's **native HMAC signature**
+   (`parseBody`/`isValidSignature`), NOT a Bearer token — Sanity never sends an
+   `Authorization` header, so a Bearer check rejects every real webhook.
+   **This requires a Secret set on the webhook in sanity.io/manage that matches
+   `SANITY_WEBHOOK_SECRET` in Vercel.** Without it every delivery gets a 401.
+
+2. **Safety net** — `/api/cron/send-pending-tracking-emails`, run hourly by
+   Vercel Cron (see `vercel.json`). Sweeps up orders with a tracking number
+   whose email never went out. Guardrails: only looks back
+   `TRACKING_EMAIL_LOOKBACK_DAYS` (default 14) so it can never blast a
+   historical backlog, caps sends per run (`TRACKING_EMAIL_MAX_PER_RUN`,
+   default 10), skips drafts/archived, and supports `?dryRun=1`.
+
+Shared send logic lives in `src/lib/tracking-email.ts` — both paths call
+`sendTrackingEmailForOrder(orderId)`, which re-reads the order immediately
+before sending, so the two paths can't double-send.
+
+Manual trigger / dry run:
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  "https://trestellecoffeeco.com/api/cron/send-pending-tracking-emails?dryRun=1"
+```
 
 ---
 
@@ -106,15 +137,20 @@ When Jonathan confirms a new date:
 ## Environment Variables Needed (Vercel)
 - `NEXT_PUBLIC_SANITY_PROJECT_ID`
 - `NEXT_PUBLIC_SANITY_DATASET`
-- `SANITY_API_TOKEN` (write token for mutations)
+- `SANITY_API_WRITE_TOKEN` (write token for mutations — note the `_WRITE_`; this
+  is the name the code actually reads, via `src/sanity/env.ts`)
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `STRIPE_PAID_SHIPPING_RATE_ID` (optional — falls back to hardcoded shr_ ID)
 - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 - `HCAPTCHA_SECRET`
 - `RESEND_API_KEY`
-- `SANITY_WEBHOOK_SECRET`
+- `SANITY_WEBHOOK_SECRET` (must ALSO be set as the Secret on the Sanity webhook)
 - `ADMIN_SECRET`
+- `CRON_SECRET` (required for the tracking-email sweeper; Vercel Cron sends it
+  automatically as `Authorization: Bearer <CRON_SECRET>`)
+- `TRACKING_EMAIL_LOOKBACK_DAYS` (optional, default 14)
+- `TRACKING_EMAIL_MAX_PER_RUN` (optional, default 10)
 
 ---
 
