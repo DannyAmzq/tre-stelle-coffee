@@ -138,7 +138,21 @@ When Jonathan confirms a new date:
 
 3. **Rate limiting on checkout + order-details** — `/api/checkout` and `/api/order-details` have no rate limiting (submit-review does). Add LRUCache limiter same pattern as submit-review.
 
-4. **Dependabot** — 67 npm vulnerabilities (3 critical, 29 high). Run `npm audit fix` or review Dependabot PRs.
+4. **Dependency vulnerabilities** — the non-breaking fixes are applied
+   (2026-09-10): 41 → 9, both criticals cleared, including two Next.js RCEs
+   (one in the Image Optimization API via AVIF, which this site is exposed to
+   through `next/image`). `next` is now 16.3.4.
+
+   The **9 remaining are all in the Sanity CLI toolchain** — `@sanity/cli`,
+   `@sanity/runtime-cli`, `adm-zip`, `js-yaml`, `@vercel/frameworks`,
+   `typeid-js`, `uuid` — plus `sanity`/`next-sanity` themselves at moderate.
+   Clearing them needs a **major bump of `sanity` (v5 → v6)**, which is a
+   Studio migration, not a patch. Deliberately deferred: the CLI packages are
+   local tooling that never reach the production bundle, so the live risk is
+   low relative to the migration risk. Do it as its own piece of work.
+
+   Note: `npm audit fix --force` would attempt that major bump. Don't run it
+   casually — it will rewrite `package.json` and can break the Studio.
 
 ---
 
