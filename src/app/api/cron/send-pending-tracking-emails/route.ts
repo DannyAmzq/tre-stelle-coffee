@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHash, timingSafeEqual } from 'crypto';
 import { orderClient, sendTrackingEmailForOrder } from '@/lib/tracking-email';
 import type { SendTrackingEmailResult } from '@/lib/tracking-email';
+import { secretsMatch } from '@/lib/secret-compare';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -28,14 +28,8 @@ const DEFAULT_LOOKBACK_DAYS = 14;
 const DEFAULT_MAX_PER_RUN = 10;
 
 function isAuthorized(req: NextRequest): boolean {
-	const secret = process.env.CRON_SECRET;
-	if (!secret) return false;
-
-	const provided = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '') ?? '';
-	// Hash both sides so the comparison is fixed-length and timing-safe.
-	const a = createHash('sha256').update(provided).digest();
-	const b = createHash('sha256').update(secret).digest();
-	return timingSafeEqual(a, b);
+	const provided = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '');
+	return secretsMatch(provided, process.env.CRON_SECRET);
 }
 
 function positiveIntFromEnv(name: string, fallback: number): number {
