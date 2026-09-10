@@ -10,22 +10,51 @@ Next.js 16 (App Router, Turbopack) e-commerce + marketing site for Tre Stelle Co
 ## Active Branch
 All current work is on: `claude/fix-security-issues-eDFXd`
 
-PRs #9, #10, #11, #14, #15 and #16 are merged. Restart the branch from `main`
-before starting new work.
+PRs #9, #10, #11, #14, #15, #16, #17, #18 and #19 are merged. Restart the
+branch from `main` before starting new work.
+
+Note: a squash merge once silently dropped later commits from a PR (#14), so
+after merging, verify the files actually landed on `main` before telling anyone
+it shipped.
 
 ---
 
 ## Tracking Emails (how they actually work)
 
+Status: **working** — verified end to end on 2026-09-10 (webhook 200, Resend
+reported `Delivered`).
+
 Two paths, so a single failure doesn't silently strand customers:
 
 1. **Fast path** — `/api/send-tracking-email`. A Sanity webhook fires when an
    order changes; if it has a tracking number and hasn't been emailed, the email
-   goes out immediately. Authenticated with Sanity's **native HMAC signature**
-   (`parseBody`/`isValidSignature`), NOT a Bearer token — Sanity never sends an
-   `Authorization` header, so a Bearer check rejects every real webhook.
-   **This requires a Secret set on the webhook in sanity.io/manage that matches
-   `SANITY_WEBHOOK_SECRET` in Vercel.** Without it every delivery gets a 401.
+   goes out immediately. Accepts **either** Sanity's native HMAC signature
+   (`sanity-webhook-signature`, via `parseBody`) **or** a custom
+   `Authorization: Bearer <secret>` header — both compared against
+   `SANITY_WEBHOOK_SECRET`. Sanity webhooks can be configured either way, and
+   only accepting one is how this broke.
+   **A Secret MUST be set on the webhook in sanity.io/manage.** With the field
+   empty, Sanity sends no auth at all and every delivery gets a 401.
+
+### If tracking emails stop again, check this first
+
+This exact failure burned ~6 months. Diagnose in this order:
+
+1. **sanity.io/manage → API → Webhooks → Send Tracking Email → Attempts.**
+   The HTTP code tells you almost everything: `401` = auth, `404` = wrong URL
+   or the route isn't in the deployed build, `200` = it worked and the problem
+   is downstream (check Resend).
+2. **Is the webhook's Secret field populated?** It being empty was the root
+   cause in Mar–Sep 2026. It is not obvious in the UI — you have to open
+   "Edit webhook" and scroll to the bottom.
+3. **Vercel → Logs.** Rejections log the specific reason (no signature at all
+   vs. signature present but mismatched), not just "Unauthorized".
+4. **Resend → Emails.** A `resendId` in the webhook's response body means we
+   handed off successfully; delivery status lives in Resend.
+
+`SANITY_WEBHOOK_SECRET` is shared by **both** Sanity webhooks (this one and
+Next.js Redeploy). Rotating it means updating three places — the Vercel env var
+plus both webhook Secret fields — or the one you miss starts 401ing.
 
 2. **Safety net** — `/api/cron/send-pending-tracking-emails`, run daily at
    14:00 UTC (~9am Central) by Vercel Cron (see `vercel.json`). Sweeps up
@@ -77,8 +106,13 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 - `src/app/cart/page.tsx` — "Proceed to Checkout" button has spinner, aria-busy, helper text, and "🔒 Secure checkout powered by Stripe" trust line
 
 ### Event status
-- Event postponed — popup and homepage FeaturedEvent are disabled (date gate set to 2099)
-- `src/lib/events.ts` — Eventbrite URL updated to new listing (ready for when event is rescheduled)
+- The Immersive Coffee Experience class on **July 26, 2026** has passed. The
+  date gate in `isImmersiveCoffeeEventEnabled` runs Jun 1 – Jul 26 2026, so the
+  popup and homepage FeaturedEvent now hide themselves automatically. Nothing
+  to turn off.
+- The 4th anniversary popup + confetti (June 20) were removed entirely once the
+  event passed.
+- `src/lib/events.ts` holds the Eventbrite URL for the most recent listing.
 
 ---
 
@@ -94,9 +128,11 @@ When Jonathan confirms a new date:
 
 ## Pending Security Items (not yet implemented)
 
-1. **Timing-safe secret comparison** — use `crypto.timingSafeEqual` for webhook/admin token checks in:
-   - `src/app/api/send-tracking-email/route.ts`
-   - `src/app/api/admin/fix-order-reference/route.ts`
+1. **Timing-safe secret comparison** — done for `send-tracking-email` and the
+   cron sweeper via `src/lib/secret-compare.ts` (`secretsMatch`, which also
+   trims both sides so a pasted trailing newline can't cause a mystery 401).
+   Still TODO: `src/app/api/admin/fix-order-reference/route.ts` uses a plain
+   `!==` comparison and should use `secretsMatch` too.
 
 2. **Stripe webhook idempotency** — prevent duplicate orders if Stripe retries a webhook. Check for existing order by `paymentIntentId` before creating.
 
@@ -136,6 +172,30 @@ When Jonathan confirms a new date:
 | Review submission | `src/app/api/submit-review/route.ts` |
 | Sitemap | `src/app/sitemap.xml/route.ts` |
 | Robots | `src/app/robots.ts` |
+| Tracking email send logic (shared) | `src/lib/tracking-email.ts` |
+| Tracking email webhook (fast path) | `src/app/api/send-tracking-email/route.ts` |
+| Tracking email sweeper (safety net) | `src/app/api/cron/send-pending-tracking-emails/route.ts` |
+| Timing-safe secret comparison | `src/lib/secret-compare.ts` |
+| Event booking inquiry API | `src/app/api/event-inquiry/route.ts` |
+| Cron schedule | `vercel.json` |
+
+---
+
+## Rotating `SANITY_WEBHOOK_SECRET`
+
+It is shared by two Sanity webhooks, and the change is not atomic, so there is
+a short window where deliveries 401. Tracking emails sent in that window are
+picked up by the daily sweeper; revalidation just misses a beat. Do it in this
+order — it keeps the window to however long the dashboard clicks take, rather
+than the length of a deploy:
+
+1. Vercel → Settings → Environment Variables → set `SANITY_WEBHOOK_SECRET` to
+   the new value.
+2. Redeploy and wait for **Ready**.
+3. sanity.io/manage → API → Webhooks → set the **Secret** field to the same
+   value on **both** webhooks (Send Tracking Email *and* Next.js Redeploy).
+4. Verify: re-save an order with a tracking number, confirm the webhook's
+   Attempts shows **200**, and publish a content edit to confirm revalidation.
 
 ---
 
