@@ -12,10 +12,15 @@ export async function POST(req: NextRequest) {
 	try {
 		const { body, isValidSignature } = await parseBody<SanityWebhookBody>(
 			req,
-			process.env.SANITY_WEBHOOK_SECRET
+			// Trimmed: Sanity computes the HMAC from the Secret exactly as stored in
+			// its dashboard, so a stray newline on the Vercel copy breaks the match.
+			process.env.SANITY_WEBHOOK_SECRET?.trim()
 		);
 
 		if (!isValidSignature) {
+			console.warn(
+				'revalidate-sanity: rejected — no valid sanity-webhook-signature. Set a Secret on this webhook at sanity.io/manage equal to SANITY_WEBHOOK_SECRET.'
+			);
 			return new Response('Invalid Sanity webhook signature', { status: 401 });
 		}
 

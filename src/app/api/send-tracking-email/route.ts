@@ -24,7 +24,9 @@ type OrderWebhookPayload = { _id?: string };
  */
 export async function POST(req: NextRequest) {
 	try {
-		const secret = process.env.SANITY_WEBHOOK_SECRET;
+		// Trimmed: Sanity computes the HMAC from the Secret exactly as stored in
+		// its dashboard, so a stray newline on the Vercel copy breaks the match.
+		const secret = process.env.SANITY_WEBHOOK_SECRET?.trim();
 		if (!secret) {
 			console.error('send-tracking-email: SANITY_WEBHOOK_SECRET is not configured');
 			return NextResponse.json({ message: 'Webhook secret not configured' }, { status: 503 });
