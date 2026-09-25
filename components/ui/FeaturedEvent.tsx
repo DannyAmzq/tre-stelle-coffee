@@ -44,7 +44,7 @@ export default function FeaturedEvent() {
 								<div className="relative aspect-[3/4] w-full max-w-md mx-auto">
 									<Image
 										src="/images/immersive-coffee-event.jpg"
-										alt="Immersive Coffee Experience - Tre Stelle Coffee Co. - May 31, 2026"
+										alt="Immersive Coffee Experience - Tre Stelle Coffee Co. - October 10, 2026"
 										fill
 										className="object-cover transition-transform duration-500 group-hover:scale-105"
 									/>
@@ -61,7 +61,7 @@ export default function FeaturedEvent() {
 									<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
 									</svg>
-									<span className="font-semibold">Sunday, July 26 • 6:30 PM – 8:30 PM CST</span>
+									<span className="font-semibold">Saturday, October 10 • 6:30 PM – 8:00 PM CST</span>
 								</div>
 
 								<h3 className="text-2xl md:text-3xl font-bold text-primary mb-6">

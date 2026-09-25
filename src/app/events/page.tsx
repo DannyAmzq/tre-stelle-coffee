@@ -199,9 +199,9 @@ const eventPackages: EventPackage[] = [
 					<ScrollReveal delay={0.1}>
 						<div className="max-w-2xl mx-auto bg-soft-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row">
 							<div className="bg-primary text-secondary flex flex-col items-center justify-center px-8 py-10 md:min-w-[140px]">
-								<span className="text-sm font-semibold uppercase tracking-widest opacity-80">Jul</span>
-								<span className="text-6xl font-extrabold leading-none">26</span>
-								<span className="text-sm font-semibold uppercase tracking-widest opacity-80">Sunday</span>
+								<span className="text-sm font-semibold uppercase tracking-widest opacity-80">Oct</span>
+								<span className="text-6xl font-extrabold leading-none">10</span>
+								<span className="text-sm font-semibold uppercase tracking-widest opacity-80">Saturday</span>
 							</div>
 							<div className="flex flex-col justify-between p-8 flex-1">
 								<div>
@@ -213,7 +213,7 @@ const eventPackages: EventPackage[] = [
 											<svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 											</svg>
-											6:30 PM – 8:30 PM
+											6:30 PM – 8:00 PM
 										</span>
 										<span className="flex items-center gap-1">
 											<svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
