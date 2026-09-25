@@ -9,9 +9,9 @@ export function isImmersiveCoffeeEventEnabled(now: Date = new Date()): boolean {
 	if (override === 'true') return true;
 	if (override === 'false') return false;
 
-	// Active now through the class on July 26, 2026, then auto-hides
-	const start = new Date(2026, 5, 1, 0, 0, 0, 0); // June 1, 2026
-	const end = new Date(2026, 6, 26, 23, 59, 59, 999); // July 26, 2026 end of day
+	// Active now through the class on October 10, 2026, then auto-hides
+	const start = new Date(2026, 8, 1, 0, 0, 0, 0); // September 1, 2026
+	const end = new Date(2026, 9, 10, 23, 59, 59, 999); // October 10, 2026 end of day
 	return now >= start && now <= end;
 }
 
@@ -87,7 +87,7 @@ export default function ImmersiveCoffeePopup() {
 				<div className="relative w-full aspect-[3/4]">
 					<Image
 						src="/images/immersive-coffee-event.jpg"
-						alt="Immersive Coffee Experience - Tre Stelle Coffee Co. - July 26, 2026"
+						alt="Immersive Coffee Experience - Tre Stelle Coffee Co. - October 10, 2026"
 						fill
 						className="object-cover"
 						priority
@@ -97,7 +97,7 @@ export default function ImmersiveCoffeePopup() {
 				{/* Event Details */}
 				<div className="px-4 pt-4 pb-2 bg-[#f5f0e8]">
 					<h3 className="text-xl font-bold text-primary mb-1">Hands-On Coffee Classes</h3>
-					<p className="text-sm text-gray-600 mb-2">Sunday, July 26 &bull; 6:30 PM &ndash; 8:30 PM CST</p>
+					<p className="text-sm text-gray-600 mb-2">Saturday, October 10 &bull; 6:30 PM &ndash; 8:00 PM CST</p>
 					<p className="text-gray-700 text-sm">
 						Join us for an immersive coffee experience with hands-on latte art lessons and tastings. All levels welcome. <strong>$60/person.</strong>
 					</p>
