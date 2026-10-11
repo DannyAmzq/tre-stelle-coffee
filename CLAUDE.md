@@ -106,9 +106,9 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 - `src/app/cart/page.tsx` — "Proceed to Checkout" button has spinner, aria-busy, helper text, and "🔒 Secure checkout powered by Stripe" trust line
 
 ### Event status
-- **Live:** Immersive Coffee Experience, **Saturday October 10 2026**,
+- **Live:** Immersive Coffee Experience, **Sunday October 11 2026**,
   6:30–8:00 PM, $60. The date gate in `isImmersiveCoffeeEventEnabled` runs
-  Sep 1 – Oct 10 2026, so the popup and homepage FeaturedEvent hide themselves
+  Sep 1 – Oct 11 2026, so the popup and homepage FeaturedEvent hide themselves
   automatically the day after. Nothing to turn off manually.
 - Each new class is a content-only change — the popup stays mounted in
   `InnerLayoutClient.tsx` between events, gated off by the date range. Update

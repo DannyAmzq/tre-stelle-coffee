@@ -200,8 +200,8 @@ const eventPackages: EventPackage[] = [
 						<div className="max-w-2xl mx-auto bg-soft-white rounded-2xl shadow-lg overflow-hidden flex flex-col md:flex-row">
 							<div className="bg-primary text-secondary flex flex-col items-center justify-center px-8 py-10 md:min-w-[140px]">
 								<span className="text-sm font-semibold uppercase tracking-widest opacity-80">Oct</span>
-								<span className="text-6xl font-extrabold leading-none">10</span>
-								<span className="text-sm font-semibold uppercase tracking-widest opacity-80">Saturday</span>
+								<span className="text-6xl font-extrabold leading-none">11</span>
+								<span className="text-sm font-semibold uppercase tracking-widest opacity-80">Sunday</span>
 							</div>
 							<div className="flex flex-col justify-between p-8 flex-1">
 								<div>
