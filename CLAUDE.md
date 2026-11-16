@@ -105,6 +105,19 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
 ### Cart UX
 - `src/app/cart/page.tsx` — "Proceed to Checkout" button has spinner, aria-busy, helper text, and "🔒 Secure checkout powered by Stripe" trust line
 
+### Popups — both unmounted (Nov 2026)
+At the owner's request, neither popup renders any more. `HolidayBoxPopup` and
+`ImmersiveCoffeePopup` were removed from `src/app/InnerLayoutClient.tsx`; the
+components and their date gates are intentionally left in the repo, so bringing
+either back is a one-line re-add.
+
+⚠️ **Do not disable `NEXT_PUBLIC_ENABLE_HOLIDAY_BOX` to hide the holiday popup.**
+`isHolidayBoxEnabled` (`src/lib/seasonal.ts`) gates four things, not one:
+the popup, the homepage featured list (`FeaturedProducts.tsx`), the product grid
+(`ProductListWithFilter.tsx`), and a 404 guard on `/products/holiday-box`.
+Turning it off delists the Holiday Box and 404s its page. Unmount the popup
+instead, which is what was done here.
+
 ### Event status
 - **Live:** Immersive Coffee Experience, **Sunday October 11 2026**,
   6:30–8:00 PM, $60. The date gate in `isImmersiveCoffeeEventEnabled` runs
